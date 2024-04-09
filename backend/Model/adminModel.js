@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const adminSchema = new mongoose.Schema({
   username: {
@@ -37,6 +38,17 @@ const adminSchema = new mongoose.Schema({
     default:Date.now
   }
 });
+
+//generate the auth token
+adminSchema.methods.generateAuthToken = async function() {
+  try {
+    const token = await jwt.sign({_id:this._id},'This&is&my@secret*key&Dont@try@tocrackIt');
+    return token;
+  } catch (error) {
+    console.log('error while generate token',error)
+  }
+}
+
 
 // Hash the password before save the data
 adminSchema.pre("save",async function (next){

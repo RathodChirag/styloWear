@@ -19,6 +19,10 @@ registerAdmin = async (req, res) => {
       confirmPassword,
     });
 
+    //generate the token while register
+    const token = await admin.generateAuthToken();
+    console.log("token while register: ", token);
+
     await admin.save();
 
     res.status(201).json({ message: "Admin registered succesfully", admin });
@@ -36,10 +40,15 @@ loginAdmin = async (req, res) => {
 
     if (findAdmin) {
       // compare the enter password with the hash password
-      const isMatch = await bcrypt.compare(password,findAdmin.password);
+      const isMatch = await bcrypt.compare(password, findAdmin.password);
       console.log("isMatch", isMatch);
       if (isMatch) {
         console.log("Login success");
+
+        //generate the token while register
+        const token = await findAdmin.generateAuthToken();
+        console.log("token while login: ", token);
+
         res.status(200).json({ message: "Admin login succesfully", findAdmin });
       } else {
         return res
@@ -52,6 +61,29 @@ loginAdmin = async (req, res) => {
   } catch (error) {
     console.log("Error while login admin : ", error);
   }
+};
+
+updatePassword = async (req, res) => {
+  const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+  try {
+    const findAdmin = await AdminModel.findOne({ email });
+
+    if (findAdmin) {
+      console.log("admin found");
+      const isMatch = await bcrypt.compare(oldPassword, findAdmin.password);
+      if (isMatch) {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        findAdmin.password = hashedPassword;
+        await findAdmin.save();
+        console.log("password updted");
+      } else {
+        console.log("oldpassword not match");
+      }
+    } else {
+      console.log("User not found!");
+    }
+  } catch (error) {}
 };
 
 module.exports = { registerAdmin, loginAdmin };
