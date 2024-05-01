@@ -42,7 +42,8 @@ const adminSchema = new mongoose.Schema({
 //generate the auth token
 adminSchema.methods.generateAuthToken = async function() {
   try {
-    const token = await jwt.sign({_id:this._id},'This&is&my@secret*key&Dont@try@tocrackIt');
+    const token = 
+    jwt.sign({_id:this._id},'This&is&my@secret*key&Dont@try@tocrackIt');
     return token;
   } catch (error) {
     console.log('error while generate token',error)
