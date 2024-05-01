@@ -8,6 +8,7 @@ const AdminController = require("../controllers/adminController");
 // Define Routes
 router.post("/adminRegister", AdminController.registerAdmin);
 router.post("/adminLogin", AdminController.loginAdmin);
-router.post("/adminResetPassword", auth, AdminController.updatePassword); 
+router.post("/adminUpdatePassword", auth, AdminController.updatePassword); 
+router.post("/adminForgotPassword", AdminController.forgotPassword); 
 
 module.exports = router;

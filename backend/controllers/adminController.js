@@ -67,33 +67,6 @@ loginAdmin = async (req, res) => {
   }
 };
 
-
-// updatePassword = async (req, res) => {
-//   console.log('in update password file');
-//   const { oldPassword, newPassword, confirmNewPassword ,token} = req.body;
-// console.log(req.body);
-//   try {
-//     const findAdmin = await AdminModel.findOne({ email });
-
-//     if (findAdmin) {
-//       console.log("admin found");
-//       const isMatch = await bcrypt.compare(oldPassword, findAdmin.password);
-//       if (isMatch) {
-//         const hashedPassword = await bcrypt.hash(newPassword, 10);
-//         findAdmin.password = hashedPassword;
-//         await findAdmin.save();
-//         console.log("password updted");
-//       } else {
-//         console.log("oldpassword not match");
-//       }
-//     } else {
-//       console.log("User not found!");
-//     }
-//   } catch (error) {
-
-//   }
-// };
-
 updatePassword = async (req, res) => {
     console.log('in update password file');
     const { oldPassword, newPassword, confirmNewPassword } = req.body;
@@ -122,8 +95,16 @@ updatePassword = async (req, res) => {
     }
 };
 
+forgotPassword = async (req,res) => {
+  try {
+    const {email} = req.body;
+    console.log(req.body);
 
+    const findAdmin = await AdminModel.findOne({ email });
+    console.log(findAdmin);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-
-
-module.exports = { registerAdmin, loginAdmin,updatePassword };
+module.exports = { registerAdmin, loginAdmin,updatePassword ,forgotPassword};
