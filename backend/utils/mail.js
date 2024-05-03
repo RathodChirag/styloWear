@@ -1,15 +1,25 @@
+const AdminModel = require("../Model/adminModel");
 const nodemailer = require('nodemailer');
-const { getMaxListeners } = require('../Model/adminModel');
+const crypto = require("crypto");
 
 const generateOtp = () =>{
     const otp = Math.floor(1000 + Math.random() * 9000);
     return otp;
     }
 
-    const verifyMail = (email) =>{
+    const generateToken = () =>{
+        const token = crypto.randomBytes(20).toString('hex');
+        return token;
+    }
 
-        console.log('email in mail.js',email);
+    const sendVerificationEmail = async(email) =>{
+        // console.log('email in mail.js',email);
+
+        const otp = generateOtp();
+        const token = generateToken();
         
+        await AdminModel.updateOne({email},{otp,token})
+
         const tranporter = nodemailer.createTransport({
             service:"gmail",
             auth:{
@@ -17,9 +27,7 @@ const generateOtp = () =>{
                 pass:"12345678"
             }
         })
-        
-        const otp = generateOtp();
-        
+              
         const mailOptions =  {
             from: 'your_email@example.com',
             to: email,
@@ -36,5 +44,5 @@ const generateOtp = () =>{
         })
     }
 
-    module.exports = verifyMail;
+    module.exports = sendVerificationEmail;
 

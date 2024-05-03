@@ -1,7 +1,7 @@
 const AdminModel = require("../Model/adminModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const verifyMail = require("../utils/mail");
+const sendVerificationEmail = require("../utils/mail");
 
 registerAdmin = async (req, res) => {
   try {
@@ -103,7 +103,7 @@ forgotPassword = async (req,res) => {
     const findAdmin = await AdminModel.findOne({ email });
     console.log(findAdmin);
 
-    verifyMail(email);
+    sendVerificationEmail(email);
   } catch (error) {
     console.log(error);
   }
