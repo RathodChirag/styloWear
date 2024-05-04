@@ -10,5 +10,6 @@ router.post("/adminRegister", AdminController.registerAdmin);
 router.post("/adminLogin", AdminController.loginAdmin);
 router.post("/adminUpdatePassword", auth, AdminController.updatePassword); 
 router.post("/adminForgotPassword", AdminController.forgotPassword); 
+router.post("/adminVerifyOtp", AdminController.verifyOtpandToken); 
 
 module.exports = router;

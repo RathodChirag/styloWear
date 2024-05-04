@@ -1,48 +1,57 @@
 const AdminModel = require("../Model/adminModel");
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
-const generateOtp = () =>{
-    const otp = Math.floor(1000 + Math.random() * 9000);
-    return otp;
-    }
+const generateOtp = () => {
+  const otp = Math.floor(1000 + Math.random() * 9000);
+  return otp;
+};
 
-    const generateToken = () =>{
-        const token = crypto.randomBytes(20).toString('hex');
-        return token;
-    }
+const generateToken = () => {
+  const token = crypto.randomBytes(20).toString("hex");
+  return token;
+};
 
-    const sendVerificationEmail = async(email) =>{
-        // console.log('email in mail.js',email);
+const sendVerificationEmail = async (findAdmin) => {
+ 
+  try {
+    const otp = generateOtp();
+    const token = generateToken();
 
-        const otp = generateOtp();
-        const token = generateToken();
-        
-        await AdminModel.updateOne({email},{otp,token})
+    findAdmin.otp = otp;
+    findAdmin.token = token;
 
-        const tranporter = nodemailer.createTransport({
-            service:"gmail",
-            auth:{
-                user:"cr2972002@gmail.com",
-                pass:"12345678"
-            }
-        })
-              
-        const mailOptions =  {
-            from: 'your_email@example.com',
-            to: email,
-            subject: 'Password Reset OTP',
-            text: `Your OTP for password reset is: ${otp}`
-        }
-        
-        tranporter.sendMail(mailOptions,(err,info)=>{
-            if(err) {console.log(err);
-            // res.send('Error sending OTP. Please try again later.');
-        }
-            else
-           { console.log('Email sent: ' + info.response);}
-        })
-    }
+    await findAdmin.save();
 
-    module.exports = sendVerificationEmail;
+    const tranporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user:process.env.EMAIL,
+        pass:process.env.EMAIL_PASSWORD,
+      },
+    });
 
+    const mailOptions = {
+      from: "rathodchirag2907@gmail.com",
+      to: `${findAdmin.email}`,
+      subject: "Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}`,
+    };
+
+    tranporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        res.send('Error sending OTP. Please try again later.');
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    return token;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+module.exports = sendVerificationEmail;

@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const AdminModel = require("../Model/adminModel");
 
-
 const auth = async (req,res,next) =>{
     console.log('in auth file');
     const token = req.body.token;

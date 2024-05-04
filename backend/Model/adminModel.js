@@ -29,6 +29,14 @@ const adminSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  otp:{
+    type: String,
+    default: null
+  },
+  token:{
+    type: String,
+    default: null
+  },
   createdAt:{
     type:Date,
     default:Date.now
@@ -43,7 +51,7 @@ const adminSchema = new mongoose.Schema({
 adminSchema.methods.generateAuthToken = async function() {
   try {
     const token = 
-    jwt.sign({_id:this._id},'This&is&my@secret*key&Dont@try@tocrackIt');
+    jwt.sign({_id:this._id},process.env.SECRET_KEY);
     return token;
   } catch (error) {
     console.log('error while generate token',error)

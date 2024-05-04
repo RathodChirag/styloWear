@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -8,7 +9,7 @@ app.use(express.json());
 
 //Connect to the database
 mongoose
-  .connect("mongodb://0.0.0.0:27017/styloWear")
+  .connect(process.env.DB_HOST)
   .then(() => {
     console.log("Connected to the database");
   })
