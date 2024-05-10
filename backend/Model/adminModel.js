@@ -15,11 +15,11 @@ const adminSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: null, 
+    default: null,
   },
   profilePhoto: {
     type: String,
-    default: null, 
+    default: null,
   },
   password: {
     type: String,
@@ -27,46 +27,43 @@ const adminSchema = new mongoose.Schema({
   },
   confirmPassword: {
     type: String,
-    required: true,
   },
-  otp:{
+  otp: {
     type: String,
-    default: null
+    default: null,
   },
-  token:{
+  token: {
     type: String,
-    default: null
+    default: null,
   },
-  createdAt:{
-    type:Date,
-    default:Date.now
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  updatedAt:{
-    type:Date,
-    default:Date.now
-  }
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 //generate the auth token
-adminSchema.methods.generateAuthToken = async function() {
+adminSchema.methods.generateAuthToken = async function () {
   try {
-    const token = 
-    jwt.sign({_id:this._id},process.env.SECRET_KEY);
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
     return token;
   } catch (error) {
-    console.log('error while generate token',error)
+    console.log("error while generate token", error);
   }
-}
-
+};
 
 // Hash the password before save the data
-adminSchema.pre("save",async function (next){
-  if(this.isModified('password')){
-    this.password = await bcrypt.hash(this.password,10);
+adminSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
     //console.log('Password Hash',this.password);
     next();
   }
-})
+});
 
-const Admin = mongoose.model('Admin',adminSchema);
-module.exports = Admin
+const Admin = mongoose.model("Admin", adminSchema);
+module.exports = Admin;

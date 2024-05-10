@@ -4,8 +4,15 @@ const sendVerificationEmail = require("../utils/mail");
 
 registerAdmin = async (req, res) => {
   try {
-    //console.log(req.body);
     const { username, email, password, confirmPassword } = req.body;
+
+    if (!username || !email || !password || !confirmPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
 
     let admin = await AdminModel.findOne({ email });
 
@@ -17,19 +24,21 @@ registerAdmin = async (req, res) => {
       username,
       email,
       password,
-      confirmPassword,
     });
 
     //generate the token while register
     const token = await admin.generateAuthToken();
     console.log("token while register: ", token);
 
+    //Save the token in the cookies for Authentication
+    res.cookie("JWT", token, { httpOnly: true });
+
     await admin.save();
 
     res.status(201).json({ message: "Admin registered succesfully", admin });
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Server Error");
+    res.status(500).send({ error: "Internal Server Error" });
   }
 };
 
@@ -52,6 +61,9 @@ loginAdmin = async (req, res) => {
         const token = await findAdmin.generateAuthToken();
         console.log("token while login: ", token);
 
+        //Save the token in the cookies for Authentication
+        res.cookie("JWT", token, { httpOnly: true });
+
         res.status(200).json({ message: "Admin login succesfully", findAdmin });
       } else {
         return res
@@ -67,25 +79,24 @@ loginAdmin = async (req, res) => {
 };
 
 updatePassword = async (req, res) => {
-  console.log("in update password file");
   const { oldPassword, newPassword, confirmNewPassword } = req.body;
 
   try {
-    const user = req.user;
-    console.log("user in update", user);
-    if (!user) {
-      console.log("User not found!");
-      return res.status(404).json({ message: "User not found" });
+    const admin = req.user;
+    console.log("admin in update", admin);
+    if (!admin) {
+      console.log("Admin not found!");
+      return res.status(404).json({ message: "Admin not found" });
     }
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    const isMatch = await bcrypt.compare(oldPassword, admin.password);
     if (!isMatch) {
       console.log("Old password does not match");
       return res.status(400).json({ message: "Old password does not match" });
     }
 
-    user.password = req.body.newPassword;
+    admin.password = req.body.newPassword;
     // user.password = hashedPassword;
-    await user.save();
+    await admin.save();
     console.log("Password updated");
     return res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
@@ -141,3 +152,4 @@ module.exports = {
   forgotPassword,
   verifyOtpandToken,
 };
+

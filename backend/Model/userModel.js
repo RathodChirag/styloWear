@@ -20,56 +20,54 @@ const userSchema = new mongoose.Schema({
   },
   profilePhoto: {
     type: String,
-    default: null, 
+    default: null,
   },
   password: {
     type: String,
     required: true,
   },
-  address:{
+  address: {
     type: String,
   },
   confirmPassword: {
     type: String,
-    required: true,
   },
-  otp:{
+  otp: {
     type: String,
-    default: null
+    default: null,
   },
-  token:{
+  token: {
     type: String,
-    default: null
+    default: null,
   },
-  createdAt:{
-    type:Date,
-    default:Date.now
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  updatedAt:{
-    type:Date,
-    default:Date.now
-  }
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 //generate the auth token
-userSchema.methods.generateAuthToken = async function() {
+userSchema.methods.generateAuthToken = async function () {
   try {
-    const token = 
-    jwt.sign({_id:this._id},process.env.SECRET_KEY);
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
     return token;
   } catch (error) {
-    console.log('error while generate token',error)
+    console.log("error while generate token", error);
   }
-}
+};
 
 // Hash the password before save the data
-userSchema.pre("save",async function (next){
-  if(this.isModified('password')){
-    this.password = await bcrypt.hash(this.password,10);
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
     //console.log('Password Hash',this.password);
     next();
   }
-})
+});
 
-const User = mongoose.model('User',userSchema);
-module.exports = User
+const User = mongoose.model("User", userSchema);
+module.exports = User;

@@ -1,24 +1,42 @@
 const jwt = require("jsonwebtoken");
 const AdminModel = require("../Model/adminModel");
+const UserModel = require("../Model/userModel");
 
-const auth = async (req,res,next) =>{
-    console.log('in auth file');
-    const token = req.body.token;
+const auth = async (req, res, next) => {
+  let token;
+  // Check if token is present in Authorization header
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.token) {
+    token = req.cookies.token;
+  }
 
-    if(!token){
-        res.status(401).json({message:"Unauthorized"});
+  try {
+    const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("verify token", verifyToken);
+
+    // Check in AdminModel
+    let user = await AdminModel.findById({ _id: verifyToken._id });
+
+    // If no user found in AdminModel, check in UserModel
+    if (!user) {
+      user = await UserModel.findById({ _id: verifyToken._id });
     }
 
-    try {
-        const verifyToken = jwt.verify(token,'This&is&my@secret*key&Dont@try@tocrackIt');
-        console.log('verify token',verifyToken);
-        req.user = await AdminModel.findById({_id: verifyToken._id});
-        console.log('user', req.user);
-        next();
-        console.log("admin authenticated successfully !!");
-    } catch (error) {
-        return res.status(401).json({message:"Invalid Token"});
+    if (!user) {
+      throw new Error("User not found");
     }
-}
+
+    req.user = user;
+    console.log("user", req.user);
+    next();
+    console.log("user authenticated successfully !!");
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid Token" });
+  }
+};
 
 module.exports = auth;
