@@ -166,10 +166,42 @@ verifyOTP = async (req, res) => {
   }
 };
 
+resetPassword = async (req, res) => {
+  try {
+    const { newPassword, confirmNewPassword } = req.body;
+    const token = req.headers.authorization.split(" ")[1];
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    // Find the user by the token
+    const user = await UserModel.findOne({ token });
+
+    if (!user) {
+      return res.status(404).json({ message: "user/Token not found" });
+    }
+
+    user.password = newPassword;
+
+    // Remove the reset token and OTP
+    user.token = null;
+    user.otp = null;
+
+    await user.save();
+    return res
+      .status(201)
+      .json({ message: "Your Password Reset Successfully !!" });
+  } catch (error) {
+    console.log("Error while Reset Password", error);
+    return res.status(404).json({ message: "Internal Server Error" });
+  }
+};
 module.exports = {
   registerUser,
   loginUser,
   updatePassword,
   forgotPassword,
   verifyOTP,
+  resetPassword
 };

@@ -1,5 +1,6 @@
 const AdminModel = require("../Model/adminModel");
 const bcrypt = require("bcrypt");
+const { generateOtp, generateToken } = require("../utils/otpGenerator");
 const { sendOTP } = require("../utils/mail");
 
 registerAdmin = async (req, res) => {
@@ -79,11 +80,16 @@ loginAdmin = async (req, res) => {
 };
 
 updatePassword = async (req, res) => {
-  const { oldPassword, newPassword, confirmNewPassword } = req.body;
-
   try {
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
     const admin = req.user;
     console.log("admin in update", admin);
+
     if (!admin) {
       console.log("Admin not found!");
       return res.status(404).json({ message: "Admin not found" });
@@ -116,6 +122,7 @@ forgotPassword = async (req, res) => {
 
     // generate OTP And token to authenticate the admin
     const otp = generateOtp();
+    console.log(otp);
     const token = generateToken();
 
     //Send the mail with OTP to admins
@@ -165,10 +172,43 @@ verifyOTP = async (req, res) => {
   }
 };
 
+resetPassword = async (req, res) => {
+  try {
+    const { newPassword, confirmNewPassword } = req.body;
+    const token = req.headers.authorization.split(" ")[1];
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    // Find the user by the token
+    const admin = await AdminModel.findOne({ token });
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin/Token not found" });
+    }
+
+    admin.password = newPassword;
+
+    // Remove the reset token and OTP
+    admin.token = null;
+    admin.otp = null;
+
+    await admin.save();
+    return res
+      .status(201)
+      .json({ message: "Your Password Reset Successfully !!" });
+  } catch (error) {
+    console.log("Error while Reset Password", error);
+    return res.status(404).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   registerAdmin,
   loginAdmin,
   updatePassword,
   forgotPassword,
   verifyOTP,
+  resetPassword,
 };
