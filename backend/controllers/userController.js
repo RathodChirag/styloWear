@@ -1,5 +1,7 @@
 const UserModel = require("../Model/userModel");
 const bcrypt = require("bcrypt");
+const { generateOtp, generateToken } = require("../utils/otpGenerator");
+const { sendOTP } = require("../utils/mail");
 
 registerUser = async (req, res) => {
   try {
@@ -104,4 +106,70 @@ updatePassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, updatePassword };
+forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // generate OTP And token to authenticate the user
+    const otp = generateOtp();
+    const token = generateToken();
+
+    //Send the mail with OTP to users
+    await sendOTP(email, otp);
+
+    //hash the otp
+    const hashedOTP = await bcrypt.hash(otp, 10);
+
+    // Save the hashed OTP in the database for the admin
+    user.otp = hashedOTP;
+    user.token = token;
+    await user.save();
+
+    res.status(200).json({ message: "OTP sent successfully", user });
+  } catch (error) {
+    console.error("Error in sending OTP:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+verifyOTP = async (req, res) => {
+  const { otp } = req.body;
+  const token = req.headers.authorization.split(" ")[1];
+  console.log("token", token);
+
+  try {
+    // Find the user by the token
+    const user = await UserModel.findOne({ token });
+
+    if (!user) {
+      return res.status(404).json({ message: "User/Token not found" });
+    }
+
+    // Compare the entered OTP with the hashed OTP stored in the database
+    const isMatch = await bcrypt.compare(otp, user.otp);
+
+    if (isMatch) {
+      // OTP is verified, user is validated
+      return res.status(200).json({ message: "OTP verified, user validated" });
+    } else {
+      // OTP is incorrect
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+  } catch (error) {
+    console.error("Error in verifying OTP:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  updatePassword,
+  forgotPassword,
+  verifyOTP,
+};

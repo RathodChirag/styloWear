@@ -1,6 +1,6 @@
 const AdminModel = require("../Model/adminModel");
 const bcrypt = require("bcrypt");
-const sendVerificationEmail = require("../utils/mail");
+const { sendOTP } = require("../utils/mail");
 
 registerAdmin = async (req, res) => {
   try {
@@ -106,42 +106,62 @@ updatePassword = async (req, res) => {
 };
 
 forgotPassword = async (req, res) => {
+  const { email } = req.body;
   try {
-    const { email } = req.body;
-    console.log(req.body);
+    const admin = await AdminModel.findOne({ email });
 
-    const findAdmin = await AdminModel.findOne({ email });
-    console.log(findAdmin);
+    if (!admin) {
+      return res.status(404).json({ message: "admin not found" });
+    }
 
-    const token = await sendVerificationEmail(findAdmin);
+    // generate OTP And token to authenticate the admin
+    const otp = generateOtp();
+    const token = generateToken();
 
-    return res.status(200).json({ token, user: findAdmin });
+    //Send the mail with OTP to admins
+    await sendOTP(email, otp);
+
+    //hash the otp
+    const hashedOTP = await bcrypt.hash(otp, 10);
+
+    // Save the hashed OTP in the database for the admin
+    admin.otp = hashedOTP;
+    admin.token = token;
+    await admin.save();
+
+    res.status(200).json({ message: "OTP sent successfully", admin });
   } catch (error) {
-    console.log(error);
+    console.error("Error in sending OTP:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-verifyOtpandToken = async (req, res) => {
-  try {
-    const { otp, token } = req.body;
-    const findAdmin = await AdminModel.findOne({ token });
-    console.log(findAdmin);
+verifyOTP = async (req, res) => {
+  const { otp } = req.body;
+  const token = req.headers.authorization.split(" ")[1];
+  console.log("token", token);
 
-    if (!findAdmin) {
-      console.log(`Admin is not verified!!`);
-      return res.status(404).json({ message: "Invalid Token" });
+  try {
+    // Find the user by the token
+    const admin = await AdminModel.findOne({ token });
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin/Token not found" });
     }
 
-    if (findAdmin.otp === otp) {
-      // OTP matches, return success response
-      return res.status(200).json({ message: "OTP and token are verified" });
+    // Compare the entered OTP with the hashed OTP stored in the database
+    const isMatch = await bcrypt.compare(otp, admin.otp);
+
+    if (isMatch) {
+      // OTP is verified, user is validated
+      return res.status(200).json({ message: "OTP verified, admin validated" });
     } else {
-      // OTP does not match, return failure response
+      // OTP is incorrect
       return res.status(400).json({ message: "Invalid OTP" });
     }
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error("Error in verifying OTP:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -150,6 +170,5 @@ module.exports = {
   loginAdmin,
   updatePassword,
   forgotPassword,
-  verifyOtpandToken,
+  verifyOTP,
 };
-
