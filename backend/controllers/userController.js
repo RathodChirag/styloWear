@@ -80,9 +80,13 @@ loginUser = async (req, res) => {
 };
 
 updatePassword = async (req, res) => {
-  const { oldPassword, newPassword, confirmNewPassword } = req.body;
-
   try {
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
     const user = req.user;
     console.log("user in update", user);
     if (!user) {
@@ -197,11 +201,12 @@ resetPassword = async (req, res) => {
     return res.status(404).json({ message: "Internal Server Error" });
   }
 };
+
 module.exports = {
   registerUser,
   loginUser,
   updatePassword,
   forgotPassword,
   verifyOTP,
-  resetPassword
+  resetPassword,
 };

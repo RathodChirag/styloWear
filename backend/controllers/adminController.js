@@ -1,4 +1,5 @@
 const AdminModel = require("../Model/adminModel");
+const UserModel = require("../Model/userModel");
 const bcrypt = require("bcrypt");
 const { generateOtp, generateToken } = require("../utils/otpGenerator");
 const { sendOTP } = require("../utils/mail");
@@ -204,6 +205,23 @@ resetPassword = async (req, res) => {
   }
 };
 
+getAllUsers = async (req, res) => {
+  try {
+    const allUsersList = await UserModel.find();
+
+    // If there are no users found, send a 404 response
+    if (!allUsersList || allUsersList.length === 0) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    // If users are found, send them as a response
+    return res.status(200).json({ users: allUsersList });
+  } catch (error) {
+    console.log("Error while getAll users", error);
+    return res.status(404).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   registerAdmin,
   loginAdmin,
@@ -211,4 +229,5 @@ module.exports = {
   forgotPassword,
   verifyOTP,
   resetPassword,
+  getAllUsers,
 };
