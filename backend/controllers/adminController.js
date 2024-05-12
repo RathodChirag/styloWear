@@ -222,6 +222,7 @@ getAllUsers = async (req, res) => {
   }
 };
 
+addProducts = async (req, res) => {};
 module.exports = {
   registerAdmin,
   loginAdmin,
