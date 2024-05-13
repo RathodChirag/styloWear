@@ -32,14 +32,6 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  productReviews: [
-    {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      comment: { type: String },
-      rating: { type: Number, min: 1, max: 5 },
-    },
-  ],
-  averageRating: { type: Number, default: 0 },
 });
 const Product = mongoose.model("Product", productSchema);
 
