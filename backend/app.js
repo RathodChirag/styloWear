@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const app = express();
 const adminRouter = require('./routes/adminRoute');
 const userRouter = require('./routes/userRoute');
+const productRouter = require('./routes/productRoute');
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -25,6 +26,7 @@ mongoose
 //Route for the admin controller
 app.use('/admin', adminRouter);
 app.use('/user',userRouter);
+app.use('/admin/product',productRouter);
 
 // app listining on port
 app.listen(3000, (req, res) => {
