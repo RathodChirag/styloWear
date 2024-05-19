@@ -12,5 +12,6 @@ router.post("/userForgotPassword", UserController.forgotPassword);
 router.post("/verifyUserOtp", UserController.verifyOTP);
 router.post("/userResetPassword", UserController.resetPassword);
 router.get("/getAllProductForUser", UserController.getAllProductListForUser);
+router.delete("/deleteUser/:id", auth, UserController.deleteUser);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const UserModel = require("../Model/userModel");
 const ProductModel = require("../Model/productModel");
 const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 const { generateOtp, generateToken } = require("../utils/otpGenerator");
 const { sendOTP } = require("../utils/mail");
 
@@ -203,6 +204,31 @@ resetPassword = async (req, res) => {
   }
 };
 
+deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    console.log("userId", userId);
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(500).json({ message: "Invalid UserId format!" });
+    }
+
+    const deleteUser = await UserModel.findByIdAndDelete(userId);
+
+    if (!deleteUser) {
+      console.log("User is not deleted");
+    }
+
+    res.status(200).json({
+      message: "User deleted successfully",
+      user: deleteUser,
+    });
+  } catch (error) {
+    console.log("Error while delete User", error);
+    return res.status(500).json("Internal Server Error");
+  }
+};
+
 getAllProductListForUser = async (req, res) => {
   try {
     const allProductList = await ProductModel.find();
@@ -227,4 +253,5 @@ module.exports = {
   verifyOTP,
   resetPassword,
   getAllProductListForUser,
+  deleteUser
 };
