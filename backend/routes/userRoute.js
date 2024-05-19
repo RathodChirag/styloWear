@@ -11,5 +11,6 @@ router.post("/userUpdatePassword", auth, UserController.updatePassword);
 router.post("/userForgotPassword", UserController.forgotPassword);
 router.post("/verifyUserOtp", UserController.verifyOTP);
 router.post("/userResetPassword", UserController.resetPassword);
+router.get("/getAllProductForUser", UserController.getAllProductListForUser);
 
 module.exports = router;

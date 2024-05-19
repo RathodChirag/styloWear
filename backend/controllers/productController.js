@@ -1,5 +1,6 @@
 const ProductModel = require("../Model/productModel");
 const upload = require("../utils/multerConfig");
+const mongoose = require("mongoose");
 
 addProduct = async (req, res) => {
   try {
@@ -107,45 +108,30 @@ updateProduct = async (req, res) => {
   }
 };
 
-// const updateProduct = async (req, res) => {
-//   try {
-//     const productId = req.params.id;
+deleteProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    console.log("productID", productId);
 
-//     upload(req, res, async function (err) {
-//       if (err) {
-//         console.error("Error uploading files:", err);
-//         return res.status(500).json({ error: "File upload failed" });
-//       }
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(500).json({ message: "Invalid ProductId format!" });
+    }
 
-//       const updates = req.body;
-//       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-//         updates.productImages = req.files.map((file) => file.path);
-//       }
+    const deleteProduct = await ProductModel.findByIdAndDelete(productId);
 
-//       try {
-//         const updatedProduct = await ProductModel.findByIdAndUpdate(
-//           productId,
-//           updates,
-//           { new: true, runValidators: true }
-//         );
+    if (!deleteProduct) {
+      console.log("product is not deleted");
+    }
 
-//         if (!updatedProduct) {
-//           return res.status(404).json({ message: "Product not found" });
-//         }
-
-//         res
-//           .status(200)
-//           .json({ message: "Product updated successfully", updatedProduct });
-//       } catch (error) {
-//         console.error("Error updating product:", error);
-//         res.status(500).json({ error: "Internal server error" });
-//       }
-//     });
-//   } catch (error) {
-//     console.error("Error parsing request body:", error);
-//     res.status(400).json({ error: "Bad request" });
-//   }
-// };
+    res.status(200).json({
+      message: "Product deleted successfully",
+      product: deleteProduct,
+    });
+  } catch (error) {
+    console.log("Error while delete product", error);
+    return res.status(500).json("Internal Server Error");
+  }
+};
 
 getAllProductList = async (req, res) => {
   try {
@@ -163,4 +149,9 @@ getAllProductList = async (req, res) => {
   }
 };
 
-module.exports = { addProduct, getAllProductList, updateProduct };
+module.exports = {
+  addProduct,
+  getAllProductList,
+  updateProduct,
+  deleteProduct,
+};

@@ -1,4 +1,5 @@
 const UserModel = require("../Model/userModel");
+const ProductModel = require("../Model/productModel");
 const bcrypt = require("bcrypt");
 const { generateOtp, generateToken } = require("../utils/otpGenerator");
 const { sendOTP } = require("../utils/mail");
@@ -202,6 +203,22 @@ resetPassword = async (req, res) => {
   }
 };
 
+getAllProductListForUser = async (req, res) => {
+  try {
+    const allProductList = await ProductModel.find();
+    // If there are no products found, send a 404 response
+    if (!allProductList || allProductList.length === 0) {
+      return res.status(404).json({ message: "No Products found" });
+    }
+
+    // If products are found, send them as a response
+    return res.status(200).json({ Products: allProductList });
+  } catch (error) {
+    console.log("Error while getAll Productsfor users", error);
+    return res.status(404).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -209,4 +226,5 @@ module.exports = {
   forgotPassword,
   verifyOTP,
   resetPassword,
+  getAllProductListForUser,
 };
