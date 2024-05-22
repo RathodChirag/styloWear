@@ -1,5 +1,6 @@
 const UserModel = require("../Model/userModel");
 const ProductModel = require("../Model/productModel");
+const ProductRating = require("../Model/productRatingModel");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const { generateOtp, generateToken } = require("../utils/otpGenerator");
@@ -253,5 +254,5 @@ module.exports = {
   verifyOTP,
   resetPassword,
   getAllProductListForUser,
-  deleteUser
+  deleteUser,
 };
