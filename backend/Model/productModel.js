@@ -9,7 +9,11 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  productPrice: {
+  productOriginalPrice: {
+    type: String,
+    required: true,
+  },
+  productDiscountedPrice: {
     type: String,
     required: true,
   },

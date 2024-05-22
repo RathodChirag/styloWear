@@ -16,7 +16,7 @@ addProduct = async (req, res) => {
         const {
           productName,
           productDescription,
-          productPrice,
+          productOriginalPrice,
           productCategory,
           productSubCategory,
           productStock,
@@ -27,7 +27,7 @@ addProduct = async (req, res) => {
         if (
           !productName ||
           !productDescription ||
-          !productPrice ||
+          !productOriginalPrice ||
           !productCategory ||
           !productSubCategory
         ) {
@@ -38,12 +38,18 @@ addProduct = async (req, res) => {
           return res.status(400).json({ error: "No product images uploaded" });
         }
 
+        // calculate the final price after discount
+        const discount = productDiscount ? parseFloat(productDiscount) : 0;
+        const OriginalPrice = parseFloat(productOriginalPrice);
+        const productDiscountedPrice = OriginalPrice - (OriginalPrice * discount) / 100; 
+
         const productImages = req.files.map((file) => file.path);
 
         const newProduct = new ProductModel({
           productName,
           productDescription,
-          productPrice,
+          productOriginalPrice,
+          productDiscountedPrice,
           productCategory,
           productSubCategory,
           productStock,
