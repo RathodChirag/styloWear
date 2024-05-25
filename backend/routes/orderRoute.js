@@ -6,6 +6,6 @@ const auth = require("../utils/auth");
 const OrderController = require("../controllers/orderController");
 
 // Define Routes
-router.post("/user/placeUserOrder/:userId", placeOrder.placeOrder);
+router.post("/placeUserOrder/:userId", OrderController.placeOrder);
 
 module.exports = router;

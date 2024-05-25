@@ -6,6 +6,7 @@ const adminRouter = require('./routes/adminRoute');
 const userRouter = require('./routes/userRoute');
 const productRouter = require('./routes/productRoute');
 const productRatingRouter = require('./routes/productRatingRoute');
+const orderRouter = require('./routes/orderRoute');
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -29,6 +30,7 @@ app.use('/admin', adminRouter);
 app.use('/user',userRouter);
 app.use('/admin/product',productRouter);
 app.use('/product',productRatingRouter);
+app.use('/user',orderRouter);
 
 // app listining on port
 app.listen(3000, (req, res) => {
