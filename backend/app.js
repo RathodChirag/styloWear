@@ -30,7 +30,7 @@ app.use('/admin', adminRouter);
 app.use('/user',userRouter);
 app.use('/admin/product',productRouter);
 app.use('/product',productRatingRouter);
-app.use('/user',orderRouter);
+app.use('/order',orderRouter);
 
 // app listining on port
 app.listen(3000, (req, res) => {
