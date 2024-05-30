@@ -65,4 +65,15 @@ try {
 }
 }
 
-module.exports = { placeOrder, getAllOrderListForAdmin };
+orderUpdateByUser = async(req,res) =>{
+try {
+  const orderId = req.params.orderId;
+  const order = await OrderModel.findOne({orderId}).populate('user').populate('productItems.product');
+  console.log('order update by user',order);
+} catch (error) {
+  console.error("Error while update the order:", error);
+  res.status(500).json({ error: "Failed to update the order" });
+}
+}
+
+module.exports = { placeOrder, getAllOrderListForAdmin, orderUpdateByUser };
