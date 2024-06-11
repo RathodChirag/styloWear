@@ -55,23 +55,64 @@ const placeOrder = async (req, res) => {
   }
 };
 
-getAllOrderListForAdmin = async(req,res) =>{
-try {
-  const orders = await OrderModel.find().populate('user').populate('productItems.product');
-  res.status(200).json({orders})
-} catch (error) {
-  console.error("Error fetching orders for admin:", error);
+getAllOrderListForAdmin = async (req, res) => {
+  try {
+    const orders = await OrderModel.find()
+      .populate("user")
+      .populate("productItems.product");
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error("Error fetching orders for admin:", error);
     res.status(500).json({ error: "Failed to fetch orders for admin" });
-}
-}
+  }
+};
 
 orderUpdateByUser = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const { productItems, shippingAddress, billingAddress, paymentMethod, additionalNotes } = req.body;
+    const {
+      productItems,
+      shippingAddress,
+      billingAddress,
+      paymentMethod,
+      additionalNotes,
+    } = req.body;
+
+    let totalPrice = 0;
+    // Calculate totalPrice based on productItems
+    for (const item of productItems) {
+      const product = await ProductModel.findById(item.product);
+      console.log("product", product);
+      // console.log("product price", product.productOriginalPrice);
+      if (product) {
+        totalPrice += product.productOriginalPrice * item.quantity;
+      } else {
+        return res
+          .status(400)
+          .json({ error: `Product with id ${item.product} not found` });
+      }
+    }
+
+    // Define the fields to update
+    const updateFields = {};
+    if (productItems) updateFields.productItems = productItems;
+    if (shippingAddress) updateFields.shippingAddress = shippingAddress;
+    if (billingAddress) updateFields.billingAddress = billingAddress;
+    if (paymentMethod) updateFields.paymentMethod = paymentMethod;
+    if (additionalNotes) updateFields.additionalNotes = additionalNotes;
+
+    // Options for findByIdAndUpdate
+    const options = {
+      new: true, // Return the updated document
+      runValidators: true, // Run schema validations
+    };
 
     // Find the order by orderId
-    const order = await OrderModel.findById(orderId);
+    const order = await OrderModel.findByIdAndUpdate(
+      orderId,
+      updateFields,
+      options
+    );
 
     // Check if the order exists
     if (!order) {
@@ -80,18 +121,20 @@ orderUpdateByUser = async (req, res) => {
 
     // Check if the order status is "pending"
     if (order.status !== "pending") {
-      return res.status(403).json({ error: "Order cannot be updated because it is not in the pending state" });
+      return res.status(403).json({
+        error: "Order cannot be updated because it is not in the pending state",
+      });
     }
 
-    // Update the order details
-    order.productItems = productItems || order.productItems;
-    order.shippingAddress = shippingAddress || order.shippingAddress;
-    order.billingAddress = billingAddress || order.billingAddress;
-    order.paymentMethod = paymentMethod || order.paymentMethod;
-    order.additionalNotes = additionalNotes || order.additionalNotes;
+    // // Update the order details
+    // order.productItems = productItems || order.productItems;
+    // order.shippingAddress = shippingAddress || order.shippingAddress;
+    // order.billingAddress = billingAddress || order.billingAddress;
+    // order.paymentMethod = paymentMethod || order.paymentMethod;
+    // order.additionalNotes = additionalNotes || order.additionalNotes;
 
     // Save the updated order to the database
-    await order.save();
+    // await order.save();
 
     // Send a response indicating success
     res.status(200).json({ message: "Order updated successfully", order });
