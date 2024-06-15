@@ -25,10 +25,15 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // productStock: {
+  //   quantity: { type: Number, default: 0 },
+  //   // inStock: { type: Boolean, default: true },
+  //   // outOfStock: { type: Boolean, default: false },
+  // },
   productStock: {
-    quantity: { type: Number, default: 0 },
-    inStock: { type: Boolean, default: true },
-    outOfStock: { type: Boolean, default: false },
+      type: Number, default: 0 
+    // inStock: { type: Boolean, default: true },
+    // outOfStock: { type: Boolean, default: false },
   },
   productImages: [{ type: String }],
   productKeywords: [{ type: String }],

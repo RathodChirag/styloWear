@@ -23,6 +23,19 @@ const placeOrder = async (req, res) => {
       // console.log("product price", product.productOriginalPrice);
       if (product) {
         totalPrice += product.productOriginalPrice * item.quantity;
+
+        //check if sufficient quantity is available
+        if (item.quantity > product.productStock) {
+          return res.status(400).json({
+            error:
+              `not enough stock available for product ${product.productName}`,
+          });
+        }
+
+        // deduct order quantity from stock
+        product.productStock -= item.quantity;
+
+        await product.save();
       } else {
         return res
           .status(400)
@@ -35,7 +48,7 @@ const placeOrder = async (req, res) => {
       user: userId,
       productItems,
       orderDate: Date.now(),
-      totalPrice, // Assign calculated totalPrice
+      totalPrice,
       status,
       shippingAddress,
       billingAddress,
@@ -67,39 +80,16 @@ getAllOrderListForAdmin = async (req, res) => {
   }
 };
 
+// Order Address chnage api
 orderUpdateByUser = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const {
-      productItems,
-      shippingAddress,
-      billingAddress,
-      paymentMethod,
-      additionalNotes,
-    } = req.body;
-
-    let totalPrice = 0;
-    // Calculate totalPrice based on productItems
-    for (const item of productItems) {
-      const product = await ProductModel.findById(item.product);
-      console.log("product", product);
-      // console.log("product price", product.productOriginalPrice);
-      if (product) {
-        totalPrice += product.productOriginalPrice * item.quantity;
-      } else {
-        return res
-          .status(400)
-          .json({ error: `Product with id ${item.product} not found` });
-      }
-    }
+    const { shippingAddress, billingAddress } = req.body;
 
     // Define the fields to update
     const updateFields = {};
-    if (productItems) updateFields.productItems = productItems;
     if (shippingAddress) updateFields.shippingAddress = shippingAddress;
     if (billingAddress) updateFields.billingAddress = billingAddress;
-    if (paymentMethod) updateFields.paymentMethod = paymentMethod;
-    if (additionalNotes) updateFields.additionalNotes = additionalNotes;
 
     // Options for findByIdAndUpdate
     const options = {
@@ -125,16 +115,6 @@ orderUpdateByUser = async (req, res) => {
         error: "Order cannot be updated because it is not in the pending state",
       });
     }
-
-    // // Update the order details
-    // order.productItems = productItems || order.productItems;
-    // order.shippingAddress = shippingAddress || order.shippingAddress;
-    // order.billingAddress = billingAddress || order.billingAddress;
-    // order.paymentMethod = paymentMethod || order.paymentMethod;
-    // order.additionalNotes = additionalNotes || order.additionalNotes;
-
-    // Save the updated order to the database
-    // await order.save();
 
     // Send a response indicating success
     res.status(200).json({ message: "Order updated successfully", order });
