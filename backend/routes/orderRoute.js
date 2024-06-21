@@ -9,5 +9,6 @@ const OrderController = require("../controllers/orderController");
 router.post("/user/placeUserOrder/:userId", OrderController.placeOrder);
 router.get("/admin/orderList", OrderController.getAllOrderListForAdmin);
 router.post("/user/orderUpdateByUser/:orderId", OrderController.orderUpdateByUser);
+router.put("/user/:orderId/orderCancel", OrderController.orderCancel);
 
 module.exports = router;

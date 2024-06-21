@@ -124,4 +124,23 @@ orderUpdateByUser = async (req, res) => {
   }
 };
 
-module.exports = { placeOrder, getAllOrderListForAdmin, orderUpdateByUser };
+//Order Cancel 
+orderCancel = async (req,res) =>{
+  try {
+    const orderId = req.params.orderId;
+    const orderData = await OrderModel.findByIdAndUpdate(orderId,{status:'cancel'});
+    if (!orderData) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    if (orderData.status === 'pending') {
+      return res.json({ message: 'Order cancelled successfully' });
+    } else {
+      return res.json({ message: 'Order cannot be cancelled because it is not pending' });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+module.exports = { placeOrder, getAllOrderListForAdmin, orderUpdateByUser, orderCancel };
