@@ -2,7 +2,9 @@ const express = require("express");
 const OrderModel = require("../Model/orderModel");
 const ProductModel = require("../Model/productModel");
 
-const placeOrder = async (req, res) => {
+//User Side order API ---------------------
+
+placeOrder = async (req, res) => {
   try {
     const userId = req.params.userId;
     const {
@@ -27,8 +29,7 @@ const placeOrder = async (req, res) => {
         //check if sufficient quantity is available
         if (item.quantity > product.productStock) {
           return res.status(400).json({
-            error:
-              `not enough stock available for product ${product.productName}`,
+            error: `not enough stock available for product ${product.productName}`,
           });
         }
 
@@ -65,18 +66,6 @@ const placeOrder = async (req, res) => {
     // Handle errors
     console.error("Error placing order:", error);
     res.status(500).json({ error: "Failed to place order" });
-  }
-};
-
-getAllOrderListForAdmin = async (req, res) => {
-  try {
-    const orders = await OrderModel.find()
-      .populate("user")
-      .populate("productItems.product");
-    res.status(200).json({ orders });
-  } catch (error) {
-    console.error("Error fetching orders for admin:", error);
-    res.status(500).json({ error: "Failed to fetch orders for admin" });
   }
 };
 
@@ -124,23 +113,78 @@ orderUpdateByUser = async (req, res) => {
   }
 };
 
-//Order Cancel 
-orderCancel = async (req,res) =>{
+//Order Cancel
+orderCancel = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const orderData = await OrderModel.findByIdAndUpdate(orderId,{status:'cancel'});
+    const orderData = await OrderModel.findByIdAndUpdate(orderId, {
+      status: "cancel",
+    });
     if (!orderData) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
-    if (orderData.status === 'pending') {
-      return res.json({ message: 'Order cancelled successfully' });
+    if (orderData.status === "pending") {
+      return res.json({ message: "Order cancelled successfully" });
     } else {
-      return res.json({ message: 'Order cannot be cancelled because it is not pending' });
+      return res.json({
+        message: "Order cannot be cancelled because it is not pending",
+      });
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//getOrder detail (Specific order)
+orderDetail = async (req,res) =>{
+  try {
+    const orderId = req.params.orderId;
+    const orderData = await OrderModel.findById(orderId).populate("productItems.product");
+    console.log(orderData);
+    res.status(200).json({message:"order detail fetch successfuly",orderData})
+  } catch (error) {
+    console.log("error while get the specific order detail for user",error);
+    res.status(401).json("Internal server error");
   }
 }
 
-module.exports = { placeOrder, getAllOrderListForAdmin, orderUpdateByUser, orderCancel };
+//getAllOrders List for the specific users
+allOrdersListForUsers = async (req,res) =>{
+try {
+  const userId = req.params.userId;
+  const userOrderList = await OrderModel.find({userId});
+  console.log(userOrderList);
+  res.status(200).json({message:"user all detail fetch successfuly",userOrderList})
+} catch (error) {
+  console.log("error while get allorders of user",error);
+  res.status(401).json("Internal Server error");
+}
+}
+
+//Admin Side Order API-------------------
+
+getAllOrderListForAdmin = async (req, res) => {
+  try {
+    const orders = await OrderModel.find()
+      .populate("user")
+      .populate("productItems.product");
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error("Error fetching orders for admin:", error);
+    res.status(500).json({ error: "Failed to fetch orders for admin" });
+  }
+};
+
+
+
+
+
+module.exports = {
+  placeOrder,
+  getAllOrderListForAdmin,
+  orderUpdateByUser,
+  orderCancel,
+  orderDetail,
+  allOrdersListForUsers
+};
