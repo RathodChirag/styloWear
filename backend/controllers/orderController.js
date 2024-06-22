@@ -244,7 +244,10 @@ updateUserOrderStatus = async (req, res) => {
     console.log("error while update user order status", error);
     res.status(401).json("Internal Server error");
   }
+
 };
+
+//order statictics api pending
 
 module.exports = {
   placeOrder,
