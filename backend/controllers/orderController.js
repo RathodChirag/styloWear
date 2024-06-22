@@ -2,8 +2,7 @@ const express = require("express");
 const OrderModel = require("../Model/orderModel");
 const ProductModel = require("../Model/productModel");
 
-//User Side order API ---------------------
-
+//User Side order API --------------------------------------
 placeOrder = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -118,7 +117,7 @@ orderCancel = async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const orderData = await OrderModel.findByIdAndUpdate(orderId, {
-      status: "cancel",
+      status: "canceled",
     });
     if (!orderData) {
       return res.status(404).json({ message: "Order not found" });
@@ -137,33 +136,53 @@ orderCancel = async (req, res) => {
 };
 
 //getOrder detail (Specific order)
-orderDetail = async (req,res) =>{
+orderDetail = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const orderData = await OrderModel.findById(orderId).populate(
+      "productItems.product"
+    );
+    console.log(orderData);
+    res
+      .status(200)
+      .json({ message: "order detail fetch successfuly", orderData });
+  } catch (error) {
+    console.log("error while get the specific order detail for user", error);
+    res.status(401).json("Internal server error");
+  }
+};
+
+//getAllOrders List for the (specific users)
+allOrdersListForUsers = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const userOrderList = await OrderModel.find({ user: userId }).populate(
+      "productItems.product"
+    );
+    console.log(userOrderList);
+    res
+      .status(200)
+      .json({ message: "user all detail fetch successfuly", userOrderList });
+  } catch (error) {
+    console.log("error while get allorders of user", error);
+    res.status(401).json("Internal Server error");
+  }
+};
+
+//track order API (specific order)
+trackOrder = async (req,res) =>{
   try {
     const orderId = req.params.orderId;
     const orderData = await OrderModel.findById(orderId).populate("productItems.product");
-    console.log(orderData);
-    res.status(200).json({message:"order detail fetch successfuly",orderData})
+    console.log('your order status is ',orderData.status);
+    res.status(200).json({message:"Your order status",status:orderData.status,orderData});
   } catch (error) {
-    console.log("error while get the specific order detail for user",error);
-    res.status(401).json("Internal server error");
+    console.log('error while track order',error);
+    res.status(400).json("Internal server error");
   }
 }
 
-//getAllOrders List for the specific users
-allOrdersListForUsers = async (req,res) =>{
-try {
-  const userId = req.params.userId;
-  const userOrderList = await OrderModel.find({userId});
-  console.log(userOrderList);
-  res.status(200).json({message:"user all detail fetch successfuly",userOrderList})
-} catch (error) {
-  console.log("error while get allorders of user",error);
-  res.status(401).json("Internal Server error");
-}
-}
-
-//Admin Side Order API-------------------
-
+//Admin Side Order API ---------------------------------------
 getAllOrderListForAdmin = async (req, res) => {
   try {
     const orders = await OrderModel.find()
@@ -176,9 +195,56 @@ getAllOrderListForAdmin = async (req, res) => {
   }
 };
 
+//getOrder detail (Specific order)
+orderDetail = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const orderData = await OrderModel.findById(orderId)
+      .populate("user")
+      .populate("productItems.product");
+    console.log(orderData);
+    res
+      .status(200)
+      .json({ message: "order detail fetch successfuly", orderData });
+  } catch (error) {
+    console.log("error while get the specific order detail for user", error);
+    res.status(401).json("Internal server error");
+  }
+};
 
+//update the order status
+updateUserOrderStatus = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const {status} = req.body;
 
+    //validate the status
+    const validateStatuses = [
+      "pending",
+      "processing",
+      "shipped",
+      "delivered",
+      "canceled",
+    ];
+    // console.log(!validateStatuses.includes(status));
+    if (!validateStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid Status" });
+    }
 
+    const toUpdateOrder = await OrderModel.findById(orderId);
+    if (!toUpdateOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    toUpdateOrder.status = status;
+    await toUpdateOrder.save();
+
+    res.json({ message: 'Order status updated successfully', order: toUpdateOrder });
+  } catch (error) {
+    console.log("error while update user order status", error);
+    res.status(401).json("Internal Server error");
+  }
+};
 
 module.exports = {
   placeOrder,
@@ -186,5 +252,7 @@ module.exports = {
   orderUpdateByUser,
   orderCancel,
   orderDetail,
-  allOrdersListForUsers
+  allOrdersListForUsers,
+  updateUserOrderStatus,
+  trackOrder
 };
