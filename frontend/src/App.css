@@ -1,38 +1,107 @@
-.App {
-  text-align: center;
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Roboto', sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.gradient-bg {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  color: #fff;
+  animation: fadeInBg 2s ease-in-out;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
+@keyframes fadeInBg {
   from {
-    transform: rotate(0deg);
+      opacity: 0;
   }
   to {
-    transform: rotate(360deg);
+      opacity: 1;
   }
+}
+
+.card {
+  border-radius: 15px;
+  animation: fadeInCard 1s ease-in-out;
+}
+
+@keyframes fadeInCard {
+  from {
+      opacity: 0;
+      transform: scale(0.9);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1.5rem;
+  animation: slideIn 1s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+      transform: translateX(-50px);
+  }
+  to {
+      transform: translateX(0);
+  }
+}
+
+.input-lg {
+  padding: 10px;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  transition: all 0.3s ease;
+}
+
+.input-lg:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  transition: background-color 0.3s, border-color 0.3s, transform 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+  transform: translateY(-2px);
+}
+
+.text-decoration-none {
+  color: #007bff;
+  transition: color 0.3s;
+}
+
+.text-decoration-none:hover {
+  color: #0056b3;
+}
+
+.form-label {
+  position: absolute;
+  top: -20px;
+  left: 10px;
+  background: #fff;
+  padding: 0 5px;
+  font-size: 0.9rem;
+  color: #007bff;
+  transform: translateY(0);
+  transition: all 0.2s ease-in-out;
+}
+
+.input-lg:focus + .form-label, .input-lg:not(:placeholder-shown) + .form-label {
+  top: -25px;
+  font-size: 0.8rem;
+  color: #0056b3;
 }
